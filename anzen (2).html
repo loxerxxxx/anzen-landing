@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Anzen — Safe School Commute for Every Child</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #06060A;
+    --surface: #0E0E16;
+    --surface2: #13131E;
+    --border: rgba(255,255,255,0.07);
+    --accent: #4EFFA0;
+    --accent2: #3DD6FF;
+    --accent3: #FF6B6B;
+    --text: #F0F0F5;
+    --muted: #7B7B8F;
+    --card: rgba(255,255,255,0.03);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.4;
+  }
+
+  /* GLOW ORBS */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.12;
+  }
+  .orb-1 { width: 600px; height: 600px; background: var(--accent); top: -200px; left: -200px; animation: drift1 20s ease-in-out infinite; }
+  .orb-2 { width: 500px; height: 500px; background: var(--accent2); bottom: 10%; right: -100px; animation: drift2 25s ease-in-out infinite; }
+  .orb-3 { width: 300px; height: 300px; background: #8B5CF6; top: 50%; left: 40%; animation: drift3 18s ease-in-out infinite; }
+
+  @keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(80px,60px)} }
+  @keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-60px,80px)} }
+  @keyframes drift3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-60px)} }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(0px);
+  }
+  nav.scrolled {
+    background: rgba(6,6,10,0.85);
+    border-color: var(--border);
+    backdrop-filter: blur(20px);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:0.6;transform:scale(1.3)}
+  }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,107,107,0.4);
+    color: var(--accent3);
+    letter-spacing: 0.5px;
+  }
+  .btn-nav {
+    background: var(--accent);
+    color: #06060A;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 9px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-nav:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(78,255,160,0.3); }
+
+  /* HERO */
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(78,255,160,0.06);
+    border: 1px solid rgba(78,255,160,0.2);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0; animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -3px;
+    max-width: 900px;
+    margin-bottom: 28px;
+    opacity: 0; animation: fadeUp 0.8s ease 0.4s forwards;
+  }
+
+  .hero-title .line-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--muted);
+    max-width: 560px;
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    opacity: 0; animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+
+  .hero-sub strong { color: var(--text); font-weight: 500; }
+
+  /* WAITLIST FORM */
+  .waitlist-wrap {
+    opacity: 0; animation: fadeUp 0.8s ease 0.8s forwards;
+    width: 100%; max-width: 460px;
+  }
+
+  .waitlist-form {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 6px;
+    gap: 6px;
+    transition: border-color 0.3s ease;
+  }
+  .waitlist-form:focus-within { border-color: rgba(78,255,160,0.4); box-shadow: 0 0 0 4px rgba(78,255,160,0.06); }
+
+  .waitlist-form input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .waitlist-form input::placeholder { color: var(--muted); }
+
+  .btn-waitlist {
+    background: var(--accent);
+    color: #06060A;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 12px 24px;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+  }
+  .btn-waitlist:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(78,255,160,0.35); }
+  .btn-waitlist.loading { opacity: 0.7; pointer-events: none; }
+
+  .waitlist-note {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+
+  .waitlist-success {
+    display: none;
+    align-items: center; justify-content: center; gap: 10px;
+    background: rgba(78,255,160,0.08);
+    border: 1px solid rgba(78,255,160,0.25);
+    border-radius: 14px;
+    padding: 18px 24px;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .hero-stats {
+    display: flex; gap: 48px; margin-top: 64px;
+    opacity: 0; animation: fadeUp 0.8s ease 1s forwards;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--text), var(--muted));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* SCROLL INDICATOR */
+  .scroll-hint {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    opacity: 0; animation: fadeUp 0.8s ease 1.4s forwards;
+  }
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+    animation: scrollAnim 2s ease-in-out infinite;
+  }
+  @keyframes scrollAnim { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:0.3;transform:scaleY(0.5)} }
+
+  /* PROBLEM SECTION */
+  .section {
+    position: relative; z-index: 1;
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+
+  .section-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 540px;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* PROBLEM CARDS */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 60px;
+  }
+
+  .problem-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s ease;
+    cursor: default;
+  }
+  .problem-card:hover {
+    border-color: rgba(255,107,107,0.3);
+    background: rgba(255,107,107,0.04);
+    transform: translateY(-4px);
+  }
+  .problem-icon {
+    font-size: 28px; margin-bottom: 16px;
+    display: block;
+  }
+  .problem-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700; margin-bottom: 10px;
+  }
+  .problem-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* DIVIDER */
+  .divider {
+    width: 100%; height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 0 auto;
+    max-width: 1100px;
+  }
+
+  /* HOW IT WORKS */
+  .steps-wrap {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0;
+    position: relative;
+  }
+  .steps-wrap::before {
+    content: '';
+    position: absolute;
+    top: 32px; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), var(--border), transparent);
+  }
+  .step {
+    padding: 0 24px;
+    text-align: center;
+    position: relative;
+  }
+  .step-num {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+    color: var(--accent);
+    position: relative; z-index: 1;
+    transition: all 0.3s ease;
+  }
+  .step:hover .step-num {
+    background: rgba(78,255,160,0.1);
+    border-color: rgba(78,255,160,0.4);
+    box-shadow: 0 0 24px rgba(78,255,160,0.2);
+  }
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700; margin-bottom: 10px;
+  }
+  .step-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 60px;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, rgba(78,255,160,0.06), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .feature-card:hover { border-color: rgba(78,255,160,0.2); transform: translateY(-6px); }
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-card.large {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(78,255,160,0.05), rgba(61,214,255,0.05));
+    border-color: rgba(78,255,160,0.15);
+  }
+
+  .feature-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 20px;
+    background: rgba(78,255,160,0.08);
+    padding: 4px 10px; border-radius: 20px;
+  }
+
+  .feature-icon {
+    font-size: 36px; margin-bottom: 20px; display: block;
+    filter: drop-shadow(0 0 12px rgba(78,255,160,0.3));
+  }
+
+  .feature-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .feature-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* COMING SOON CARD */
+  .feature-card.coming-soon {
+    border-color: rgba(139,92,246,0.25);
+    background: rgba(139,92,246,0.04);
+    position: relative;
+  }
+  .feature-card.coming-soon::after {
+    content: 'COMING SOON';
+    position: absolute; top: 20px; right: 20px;
+    font-size: 9px; font-weight: 700; letter-spacing: 2px;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.3);
+    color: #A78BFA;
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .feature-card.coming-soon .feature-icon { filter: drop-shadow(0 0 12px rgba(139,92,246,0.4)); }
+  .feature-card.coming-soon .feature-tag { color: #A78BFA; background: rgba(139,92,246,0.1); }
+  .feature-card.coming-soon:hover { border-color: rgba(139,92,246,0.4); }
+
+  /* TRUST SECTION */
+  .trust-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 60px;
+    align-items: start;
+  }
+  .trust-main {
+    background: linear-gradient(135deg, rgba(61,214,255,0.06), rgba(78,255,160,0.04));
+    border: 1px solid rgba(61,214,255,0.15);
+    border-radius: 20px;
+    padding: 40px;
+  }
+  .trust-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -1px; margin-bottom: 16px;
+  }
+  .trust-desc { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+
+  .check-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .check-list li {
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: 14px; color: var(--text);
+  }
+  .check-list li::before {
+    content: '✓';
+    width: 20px; height: 20px; min-width: 20px;
+    background: rgba(78,255,160,0.15);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--accent); font-weight: 700;
+    margin-top: 1px;
+  }
+
+  .trust-mini-grid { display: flex; flex-direction: column; gap: 16px; }
+  .trust-mini {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+    transition: all 0.3s ease;
+  }
+  .trust-mini:hover { border-color: rgba(78,255,160,0.2); transform: translateX(4px); }
+  .trust-mini-icon { font-size: 24px; margin-bottom: 12px; }
+  .trust-mini-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .trust-mini-desc { font-size: 13px; color: var(--muted); }
+
+  /* PRICING TEASER */
+  .pricing-teaser {
+    text-align: center;
+    padding: 80px 24px;
+    max-width: 700px;
+    margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+  .pricing-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px;
+    margin-top: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pricing-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(to right, var(--accent), var(--accent2));
+  }
+  .pricing-badge {
+    display: inline-block;
+    background: rgba(78,255,160,0.1);
+    border: 1px solid rgba(78,255,160,0.25);
+    color: var(--accent);
+    font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .pricing-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .pricing-desc { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+  /* TESTIMONIAL / QUOTE */
+  .quote-section {
+    padding: 80px 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative; z-index: 1;
+  }
+  .quote-mark {
+    font-size: 80px;
+    line-height: 1;
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    opacity: 0.3;
+    margin-bottom: -20px;
+  }
+  .quote-text {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 3vw, 34px);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -1px;
+    margin-bottom: 24px;
+  }
+  .quote-author { font-size: 14px; color: var(--muted); }
+
+  /* CITIES */
+  .cities-row {
+    display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+    margin-top: 48px;
+  }
+  .city-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    transition: all 0.3s ease;
+  }
+  .city-pill:hover {
+    border-color: rgba(78,255,160,0.3);
+    background: rgba(78,255,160,0.04);
+    transform: translateY(-3px);
+  }
+  .city-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  /* CTA FINAL */
+  .cta-final {
+    padding: 100px 24px;
+    text-align: center;
+    position: relative; z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .cta-box {
+    background: linear-gradient(135deg, rgba(78,255,160,0.08), rgba(61,214,255,0.06));
+    border: 1px solid rgba(78,255,160,0.2);
+    border-radius: 32px;
+    padding: 72px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-box::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at center, rgba(78,255,160,0.05), transparent 60%);
+    animation: rotate-glow 20s linear infinite;
+  }
+  @keyframes rotate-glow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .cta-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 5vw, 60px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+    position: relative; z-index: 1;
+  }
+  .cta-sub {
+    font-size: 18px; color: var(--muted);
+    max-width: 500px; margin: 0 auto 40px;
+    font-weight: 300; line-height: 1.7;
+    position: relative; z-index: 1;
+  }
+  .cta-form-wrap { position: relative; z-index: 1; max-width: 460px; margin: 0 auto; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; z-index: 1;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-copy { font-size: 12px; color: var(--muted); }
+
+  /* ─── BEFORE / AFTER SECTION ─── */
+  .ba-section {
+    position: relative; z-index: 1;
+    padding: 100px 0 0;
+  }
+  .ba-header {
+    max-width: 1100px;
+    margin: 0 auto 60px;
+    padding: 0 24px;
+  }
+  .ba-header .section-title { margin-bottom: 16px; }
+
+  .ba-track-outer {
+    width: 100%;
+  }
+
+  .ba-sticky-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* Progress */
+  .ba-progress-wrap {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .ba-progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, var(--accent), var(--accent2));
+    border-radius: 2px;
+    width: 20%;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Step nav buttons */
+  .ba-steps-nav {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .ba-step-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    letter-spacing: 0.3px;
+  }
+  .ba-step-btn:hover { border-color: rgba(78,255,160,0.3); color: var(--text); }
+  .ba-step-btn.active {
+    background: rgba(78,255,160,0.1);
+    border-color: rgba(78,255,160,0.4);
+    color: var(--accent);
+  }
+
+  /* Panel container */
+  .ba-panels { position: relative; }
+
+  .ba-panel {
+    display: none;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 0;
+    align-items: stretch;
+    animation: panelIn 0.45s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  .ba-panel.active { display: grid; }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.99); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Each side */
+  .ba-side {
+    border-radius: 20px;
+    padding: 36px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .ba-before {
+    background: rgba(255,107,107,0.04);
+    border: 1px solid rgba(255,107,107,0.15);
+  }
+  .ba-after {
+    background: rgba(78,255,160,0.04);
+    border: 1px solid rgba(78,255,160,0.15);
+  }
+
+  .ba-side-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 20px;
+    display: inline-flex; align-items: center;
+    width: fit-content;
+  }
+  .before-label { background: rgba(255,107,107,0.12); color: var(--accent3); }
+  .after-label  { background: rgba(78,255,160,0.12);  color: var(--accent); }
+
+  .ba-card-scene { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+  .ba-scene-icon {
+    font-size: 44px;
+    line-height: 1;
+    filter: drop-shadow(0 0 16px rgba(255,255,255,0.1));
+  }
+  .ba-scene-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .ba-scene-story {
+    font-size: 14px; color: var(--muted);
+    line-height: 1.75; font-weight: 300;
+  }
+  .ba-scene-story em { color: var(--text); font-style: normal; font-weight: 500; }
+
+  /* Chips */
+  .ba-pain-chips, .ba-good-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .pain-chip, .good-chip {
+    font-size: 11px; font-weight: 500;
+    padding: 5px 11px; border-radius: 20px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .pain-chip {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.2);
+    color: #FF9B9B;
+  }
+  .good-chip {
+    background: rgba(78,255,160,0.08);
+    border: 1px solid rgba(78,255,160,0.2);
+    color: var(--accent);
+  }
+
+  /* Meter */
+  .ba-meter { margin-top: auto; }
+  .ba-meter-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; font-weight: 500; letter-spacing: 0.5px; }
+  .ba-meter-bar {
+    height: 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+  }
+  .ba-meter-fill {
+    height: 100%; border-radius: 3px;
+    width: var(--fill);
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.2s;
+  }
+  .ba-meter-fill.bad  { background: linear-gradient(to right, #FF6B6B, #FF4444); }
+  .ba-meter-fill.good { background: linear-gradient(to right, var(--accent), var(--accent2)); }
+
+  /* VS divider */
+  .ba-divider-line {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .ba-vs {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px; font-weight: 800; color: var(--muted);
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  /* Arrow nav */
+  .ba-arrows {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    margin-top: 32px;
+  }
+  .ba-arrow {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .ba-arrow:hover {
+    border-color: rgba(78,255,160,0.4);
+    background: rgba(78,255,160,0.08);
+    color: var(--accent);
+  }
+  .ba-arrow:disabled { opacity: 0.3; pointer-events: none; }
+  .ba-counter {
+    font-size: 13px; color: var(--muted); font-weight: 500;
+    min-width: 40px; text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .ba-panel.active {
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .ba-divider-line { flex-direction: row; }
+    .ba-vs { margin: 0 auto; }
+  }
+
+  /* ─── END BEFORE/AFTER ─── */
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* TICKER */
+  .ticker-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+    background: var(--surface);
+    position: relative; z-index: 1;
+  }
+  .ticker-track {
+    display: flex; gap: 48px;
+    width: max-content;
+    animation: ticker 30s linear infinite;
+  }
+  .ticker-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); white-space: nowrap;
+  }
+  .ticker-sep { color: var(--accent); opacity: 0.5; }
+  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* PHONE MOCKUP */
+  .mockup-section {
+    position: relative; z-index: 1;
+    padding: 60px 24px 100px;
+    display: flex; justify-content: center;
+  }
+  .phone-frame {
+    width: 280px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    padding: 16px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+    position: relative;
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100%{transform:translateY(0px)} 50%{transform:translateY(-12px)}
+  }
+  .phone-notch {
+    width: 80px; height: 6px;
+    background: var(--bg); border-radius: 3px;
+    margin: 0 auto 20px;
+  }
+  .phone-screen {
+    background: var(--bg);
+    border-radius: 28px;
+    padding: 20px;
+    min-height: 480px;
+  }
+  .phone-status {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; font-size: 11px; color: var(--muted);
+  }
+  .phone-header { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .phone-sub { font-size: 11px; color: var(--muted); margin-bottom: 20px; }
+
+  .map-placeholder {
+    background: var(--surface2);
+    border-radius: 16px; height: 160px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .map-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .map-dot {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 6px rgba(78,255,160,0.15), 0 0 20px rgba(78,255,160,0.5);
+    position: relative; z-index: 1;
+    animation: ping 2s ease-in-out infinite;
+  }
+  @keyframes ping {
+    0%,100%{box-shadow:0 0 0 6px rgba(78,255,160,0.15),0 0 20px rgba(78,255,160,0.5)}
+    50%{box-shadow:0 0 0 16px rgba(78,255,160,0.05),0 0 30px rgba(78,255,160,0.3)}
+  }
+
+  .notification-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+    animation: slideIn 0.5s ease both;
+  }
+  .notification-card:nth-child(2) { animation-delay: 0.2s; }
+  .notification-card:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes slideIn {
+    from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)}
+  }
+  .notif-icon { font-size: 20px; }
+  .notif-text { font-size: 11px; line-height: 1.4; }
+  .notif-title { font-weight: 600; color: var(--text); }
+  .notif-sub { color: var(--muted); }
+
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(78,255,160,0.1);
+    border: 1px solid rgba(78,255,160,0.25);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 10px; color: var(--accent); font-weight: 600;
+  }
+  .live-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; animation: pulse-dot 1s ease infinite; }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-badge { display: none; }
+    .hero-stats { gap: 28px; }
+    .trust-row { grid-template-columns: 1fr; }
+    .feature-card.large { grid-column: span 1; }
+    .steps-wrap::before { display: none; }
+    footer { flex-direction: column; text-align: center; }
+    .cta-box { padding: 48px 24px; }
+  }
+
+  /* ═══════════ CURSOR & INTERACTIONS ═══════════ */
+  * { cursor: none !important; }
+  #c-dot {
+    position:fixed;top:0;left:0;width:10px;height:10px;
+    background:#4EFFA0;border-radius:50%;pointer-events:none;
+    z-index:99999;transform:translate(-50%,-50%);
+    box-shadow:0 0 12px #4EFFA0,0 0 28px rgba(78,255,160,.4);
+    mix-blend-mode:screen;will-change:transform;
+    transition:width .12s,height .12s,background .2s;
+  }
+  #c-ring {
+    position:fixed;top:0;left:0;width:38px;height:38px;
+    border:1.5px solid rgba(78,255,160,.5);border-radius:50%;
+    pointer-events:none;z-index:99998;transform:translate(-50%,-50%);
+    will-change:transform;
+    transition:width .3s cubic-bezier(.25,.46,.45,.94),
+               height .3s cubic-bezier(.25,.46,.45,.94),border-color .25s;
+  }
+  #c-glow {
+    position:fixed;top:0;left:0;width:200px;height:200px;
+    border-radius:50%;pointer-events:none;z-index:99985;
+    background:radial-gradient(circle,rgba(78,255,160,.065) 0%,transparent 70%);
+    transform:translate(-50%,-50%);will-change:transform;
+  }
+  #c-trail,#c-sparks{position:fixed;inset:0;pointer-events:none;}
+  #c-trail{z-index:99991;}
+  #c-sparks{z-index:99990;}
+  body.chover #c-dot{width:15px;height:15px;background:#fff;box-shadow:0 0 20px #fff,0 0 40px rgba(255,255,255,.3);}
+  body.chover #c-ring{width:58px;height:58px;border-color:rgba(255,255,255,.35);}
+  body.cclick #c-dot{width:5px;height:5px;background:#3DD6FF;box-shadow:0 0 10px #3DD6FF;}
+  body.cclick #c-ring{width:16px;height:16px;border-width:2px;border-color:#3DD6FF;}
+  .ripple-wave{
+    position:absolute;border-radius:50%;pointer-events:none;
+    background:rgba(78,255,160,.18);transform:scale(0);
+    animation:rippleOut .65s ease forwards;
+  }
+  @keyframes rippleOut{to{transform:scale(4.5);opacity:0;}}
+
+
+  /* ═══════════════════════════════════════
+     COMPREHENSIVE MOBILE STYLES
+     ═══════════════════════════════════════ */
+
+  /* Disable custom cursor + canvas on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    * { cursor: auto !important; }
+    #c-dot, #c-ring, #c-glow, #c-trail, #c-sparks { display: none !important; }
+  }
+
+  @media (max-width: 480px) {
+    /* ── NAV ── */
+    nav { padding: 14px 16px; }
+    .nav-logo { font-size: 18px; }
+    .nav-badge { display: none; }
+    .btn-nav { padding: 8px 16px; font-size: 12px; }
+
+    /* ── HERO ── */
+    .hero { padding: 100px 20px 60px; }
+    .hero-eyebrow { font-size: 10px; padding: 5px 12px; }
+    .hero-title { font-size: 36px; letter-spacing: -1.5px; margin-bottom: 20px; }
+    .hero-sub { font-size: 15px; margin-bottom: 32px; }
+    .waitlist-form { flex-direction: column; padding: 8px; gap: 8px; border-radius: 16px; }
+    .waitlist-form input { padding: 14px 16px; font-size: 15px; }
+    .btn-waitlist { width: 100%; padding: 14px; font-size: 14px; border-radius: 10px; text-align: center; }
+    .hero-stats { gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 40px; }
+    .stat-num { font-size: 22px; }
+    .stat-label { font-size: 11px; }
+
+    /* ── TICKER ── */
+    .ticker-item { font-size: 11px; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 60px 20px; }
+    .section-title { font-size: 28px; letter-spacing: -1px; }
+    .section-sub { font-size: 15px; }
+    .ba-header { padding: 0 20px; margin-bottom: 32px; }
+    .ba-header .section-title { font-size: 28px; letter-spacing: -1px; }
+
+    /* ── PROBLEM CARDS ── */
+    .problem-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 36px; }
+    .problem-card { padding: 22px; }
+    .problem-icon { font-size: 24px; margin-bottom: 12px; }
+    .problem-title { font-size: 16px; }
+    .problem-desc { font-size: 13px; }
+
+    /* ── HOW IT WORKS ── */
+    .steps-wrap { grid-template-columns: 1fr; gap: 28px; }
+    .steps-wrap::before { display: none; }
+    .step { padding: 0; }
+    .step-num { width: 52px; height: 52px; font-size: 18px; }
+    .step-title { font-size: 15px; }
+    .step-desc { font-size: 13px; }
+
+    /* ── PHONE MOCKUP ── */
+    .mockup-section { padding: 40px 20px 60px; }
+    .phone-frame { width: 240px; }
+
+    /* ── FEATURES GRID ── */
+    .features-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 36px; }
+    .feature-card { padding: 24px; border-radius: 16px; }
+    .feature-card.large { grid-column: span 1; }
+    .feature-icon { font-size: 28px; margin-bottom: 14px; }
+    .feature-title { font-size: 18px; }
+    .feature-desc { font-size: 13px; }
+    .feature-card.coming-soon::after { font-size: 8px; padding: 3px 8px; top: 16px; right: 16px; }
+
+    /* ── TRUST ── */
+    .trust-row { grid-template-columns: 1fr; gap: 12px; }
+    .trust-main { padding: 28px 22px; }
+    .trust-title { font-size: 20px; }
+    .trust-desc { font-size: 14px; }
+    .check-list li { font-size: 13px; }
+    .trust-mini { padding: 20px; }
+    .trust-mini-title { font-size: 15px; }
+    .trust-mini-desc { font-size: 13px; }
+
+    /* ── BEFORE/AFTER ── */
+    .ba-sticky-container { padding: 0 16px 60px; }
+    .ba-steps-nav { gap: 6px; }
+    .ba-step-btn { font-size: 11px; padding: 6px 12px; }
+    .ba-panel.active { display: flex; flex-direction: column; gap: 12px; }
+    .ba-side { padding: 22px 18px; border-radius: 16px; }
+    .ba-scene-icon { font-size: 32px; }
+    .ba-scene-title { font-size: 16px; }
+    .ba-scene-story { font-size: 13px; }
+    .pain-chip, .good-chip { font-size: 10px; padding: 4px 9px; }
+    .ba-divider-line { display: none; }
+    .ba-arrows { gap: 12px; margin-top: 20px; }
+    .ba-arrow { width: 38px; height: 38px; font-size: 16px; }
+    .ba-counter { font-size: 12px; }
+
+    /* ── QUOTE ── */
+    .quote-section { padding: 60px 20px; }
+    .quote-mark { font-size: 60px; }
+    .quote-text { font-size: 20px; letter-spacing: -0.5px; }
+    .quote-author { font-size: 13px; }
+
+    /* ── CITIES ── */
+    .cities-row { gap: 10px; }
+    .city-pill { font-size: 13px; padding: 9px 18px; }
+
+    /* ── CTA FINAL ── */
+    .cta-final { padding: 60px 16px; }
+    .cta-box { padding: 40px 20px; border-radius: 24px; }
+    .cta-title { font-size: 32px; letter-spacing: -1.5px; }
+    .cta-sub { font-size: 15px; margin-bottom: 28px; }
+    .cta-form-wrap { max-width: 100%; }
+    #cta-form { flex-direction: column; padding: 8px; gap: 8px; }
+    #cta-form input { padding: 14px 16px; font-size: 15px; }
+    #cta-form .btn-waitlist { width: 100%; padding: 14px; font-size: 14px; }
+
+    /* ── FOOTER ── */
+    footer { flex-direction: column; align-items: center; text-align: center; padding: 32px 20px; gap: 16px; }
+    .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+    .footer-links a { font-size: 13px; }
+    .footer-copy { font-size: 11px; }
+  }
+
+  @media (min-width: 481px) and (max-width: 768px) {
+    /* ── NAV ── */
+    nav { padding: 16px 24px; }
+    .nav-badge { display: none; }
+
+    /* ── HERO ── */
+    .hero { padding: 110px 28px 70px; }
+    .hero-title { font-size: 48px; letter-spacing: -2px; }
+    .hero-sub { font-size: 16px; }
+    .waitlist-form { flex-direction: column; padding: 8px; gap: 8px; }
+    .waitlist-form input { padding: 13px 16px; }
+    .btn-waitlist { width: 100%; padding: 13px; text-align: center; }
+    .hero-stats { gap: 32px; }
+
+    /* ── PROBLEM ── */
+    .problem-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── FEATURES ── */
+    .features-grid { grid-template-columns: 1fr; gap: 14px; }
+    .feature-card.large { grid-column: span 1; }
+
+    /* ── TRUST ── */
+    .trust-row { grid-template-columns: 1fr; gap: 14px; }
+
+    /* ── BEFORE/AFTER ── */
+    .ba-panel.active { display: flex; flex-direction: column; gap: 14px; }
+    .ba-side { padding: 26px 22px; }
+    .ba-divider-line { display: none; }
+
+    /* ── CTA ── */
+    .cta-box { padding: 48px 32px; }
+    .cta-title { font-size: 40px; }
+    #cta-form { flex-direction: column; padding: 8px; gap: 8px; }
+    #cta-form .btn-waitlist { width: 100%; padding: 13px; text-align: center; }
+
+    /* ── FOOTER ── */
+    footer { flex-direction: column; align-items: center; text-align: center; }
+    .footer-links { justify-content: center; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- CURSOR ELEMENTS -->
+<div id="c-dot"></div>
+<div id="c-ring"></div>
+<div id="c-glow"></div>
+<canvas id="c-trail"></canvas>
+<canvas id="c-sparks"></canvas>
+
+<!-- AMBIENT ORBS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">
+    <span class="logo-dot"></span>
+    Anzen
+  </div>
+  <div class="nav-right">
+    <span class="nav-badge">🇮🇳 Launching in India</span>
+    <button class="btn-nav" onclick="document.getElementById('waitlist-section').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="live-dot"></span>
+    Now accepting early access
+  </div>
+
+  <h1 class="hero-title">
+    Your child deserves a<br/>
+    <span class="line-accent">safer commute.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Anzen connects parents with <strong>verified, background-checked van drivers</strong> for school commutes — with real-time tracking, boarding alerts, and complete peace of mind.
+  </p>
+
+  <div class="waitlist-wrap" id="hero-waitlist">
+    <div class="waitlist-form" id="hero-form">
+      <input type="email" id="hero-email" placeholder="Enter your email address" />
+      <button class="btn-waitlist" onclick="joinWaitlist('hero')">Join Waitlist →</button>
+    </div>
+    <div class="waitlist-success" id="hero-success">
+      <span>🎉</span> You're on the list! We'll be in touch soon.
+    </div>
+    <p class="waitlist-note">
+      🔒 No spam, ever. Be first to know when we launch.
+    </p>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">40+</div>
+      <div class="stat-label">Kids per school bus</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">90 min</div>
+      <div class="stat-label">Avg bus drop time</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">0%</div>
+      <div class="stat-label">Unverified vans regulated</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">✓ Police Verified Drivers <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">📍 Live GPS Tracking <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">🔔 Boarding Alerts <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">🚐 Vehicle Fitness Certified <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">⭐ Rated & Reviewed Drivers <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">🛡️ Child Safety First <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">💳 Simple Monthly Subscription <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">🇮🇳 Made for India <span class="ticker-sep">✦</span></span>
+    <!-- duplicate for loop -->
+    <span class="ticker-item">✓ Police Verified Drivers <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">📍 Live GPS Tracking <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">🔔 Boarding Alerts <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">🚐 Vehicle Fitness Certified <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">⭐ Rated & Reviewed Drivers <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">🛡️ Child Safety First <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">💳 Simple Monthly Subscription <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">🇮🇳 Made for India <span class="ticker-sep">✦</span></span>
+  </div>
+</div>
+
+<!-- BEFORE / AFTER SCROLL COMPARISON -->
+<section class="ba-section">
+  <div class="ba-header reveal">
+    <div class="section-label" style="text-align:center">Before & After</div>
+    <h2 class="section-title" style="text-align:center;letter-spacing:-2px">Life before Anzen.<br/><span style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Life after Anzen.</span></h2>
+    <p style="text-align:center;color:var(--muted);font-size:16px;max-width:480px;margin:0 auto;font-weight:300;line-height:1.7">Scroll through to see how everything changes for parents and kids — one story at a time.</p>
+  </div>
+
+  <div class="ba-track-outer">
+    <div class="ba-sticky-container" id="baContainer">
+
+      <!-- PROGRESS BAR -->
+      <div class="ba-progress-wrap">
+        <div class="ba-progress-bar" id="baProgress"></div>
+      </div>
+
+      <!-- STEP INDICATORS -->
+      <div class="ba-steps-nav" id="baNav">
+        <button class="ba-step-btn active" data-step="0">Morning Rush</button>
+        <button class="ba-step-btn" data-step="1">Finding a Driver</button>
+        <button class="ba-step-btn" data-step="2">The Commute</button>
+        <button class="ba-step-btn" data-step="3">Peace of Mind</button>
+        <button class="ba-step-btn" data-step="4">The Child</button>
+      </div>
+
+      <!-- PANELS -->
+      <div class="ba-panels" id="baPanels">
+
+        <!-- STEP 0: MORNING RUSH -->
+        <div class="ba-panel active" data-index="0">
+          <div class="ba-side ba-before">
+            <div class="ba-side-label before-label">😰 Before Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">⏰</div>
+              <div class="ba-scene-title">6:45 AM — Panic mode</div>
+              <div class="ba-scene-story">Priya wakes up, gets the kids ready, and has no idea if the van will show up on time. Or at all. She calls the driver's number — no answer. She stands at the gate for 20 minutes, late for her own office meeting.</div>
+              <div class="ba-pain-chips">
+                <span class="pain-chip">⏱️ 20 min wait at gate</span>
+                <span class="pain-chip">📵 No response from driver</span>
+                <span class="pain-chip">😤 Late for work — again</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Stress level</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill bad" style="--fill:90%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ba-divider-line">
+            <div class="ba-vs">VS</div>
+          </div>
+          <div class="ba-side ba-after">
+            <div class="ba-side-label after-label">✨ With Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">📱</div>
+              <div class="ba-scene-title">7:02 AM — All good</div>
+              <div class="ba-scene-story">Priya gets a push notification: <em>"Rajan's van is 4 min away."</em> She finishes her chai, sends Arjun to the gate, and opens her laptop. Van arrives on time, every time — she knows before it even turns onto her street.</div>
+              <div class="ba-pain-chips">
+                <span class="good-chip">📍 Live ETA on phone</span>
+                <span class="good-chip">☕ Time to finish chai</span>
+                <span class="good-chip">💼 On time for work</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Stress level</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill good" style="--fill:12%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 1: FINDING A DRIVER -->
+        <div class="ba-panel" data-index="1">
+          <div class="ba-side ba-before">
+            <div class="ba-side-label before-label">😰 Before Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">🏫</div>
+              <div class="ba-scene-title">Standing outside school gates</div>
+              <div class="ba-scene-story">After shifting cities, Rohan spent 3 days standing outside his daughter's new school — just to find van drivers. He asked 6 other parents, got 4 different numbers, 2 didn't pick up, and 1 already had a full van. No ratings. No background info. Just word of mouth and hope.</div>
+              <div class="ba-pain-chips">
+                <span class="pain-chip">🚶 3 days of gate-standing</span>
+                <span class="pain-chip">🤷 No ratings or reviews</span>
+                <span class="pain-chip">❓ Zero verification</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Effort required</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill bad" style="--fill:95%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ba-divider-line">
+            <div class="ba-vs">VS</div>
+          </div>
+          <div class="ba-side ba-after">
+            <div class="ba-side-label after-label">✨ With Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">🔍</div>
+              <div class="ba-scene-title">Browse. Compare. Subscribe.</div>
+              <div class="ba-scene-story">Open Anzen, type your school name. See every verified driver in the zone — with real ratings from parents at your school, years of experience, vehicle type, photos, and available seats. Pick Rajan: 4.9 stars, 6 years, 3 seats left. Subscribe in 2 minutes.</div>
+              <div class="ba-pain-chips">
+                <span class="good-chip">⭐ Real parent reviews</span>
+                <span class="good-chip">✅ Fully verified drivers</span>
+                <span class="good-chip">⚡ Subscribe in 2 min</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Effort required</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill good" style="--fill:8%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: THE COMMUTE -->
+        <div class="ba-panel" data-index="2">
+          <div class="ba-side ba-before">
+            <div class="ba-side-label before-label">😰 Before Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">🚐</div>
+              <div class="ba-scene-title">90 minutes. Unknown route.</div>
+              <div class="ba-scene-story">The school bus leaves at 3 PM. It's 4:40 PM and Meena's son still isn't home. She calls the school — they don't know. She calls other parents. The bus took a detour. He arrives at 5:05 PM, tired and hungry. This happens every Tuesday.</div>
+              <div class="ba-pain-chips">
+                <span class="pain-chip">🕔 1 hr+ daily commute</span>
+                <span class="pain-chip">🗺️ Unknown route, no tracking</span>
+                <span class="pain-chip">😢 Kid arrives exhausted</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Time wasted (child)</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill bad" style="--fill:88%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ba-divider-line">
+            <div class="ba-vs">VS</div>
+          </div>
+          <div class="ba-side ba-after">
+            <div class="ba-side-label after-label">✨ With Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">⚡</div>
+              <div class="ba-scene-title">Direct route. Home in 20 min.</div>
+              <div class="ba-scene-story">Private van. Fewer kids. Direct route. Meena's son is home by 3:35 PM — every single day. She watches him move on the live map from her desk. No calls, no panic. He has time for homework, food, and a nap before evening class.</div>
+              <div class="ba-pain-chips">
+                <span class="good-chip">🏠 Home in 20 min</span>
+                <span class="good-chip">📍 Live map tracking</span>
+                <span class="good-chip">😊 Kid arrives fresh</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Time wasted (child)</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill good" style="--fill:15%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: PEACE OF MIND -->
+        <div class="ba-panel" data-index="3">
+          <div class="ba-side ba-before">
+            <div class="ba-side-label before-label">😰 Before Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">😟</div>
+              <div class="ba-scene-title">The longest 40 minutes of the day</div>
+              <div class="ba-scene-story">Every morning, Kavya drops her daughter at the van and spends the next 40 minutes wondering: Did she actually get on? Is the driver the same person as yesterday? Did they take a strange route? She checks WhatsApp 8 times. No updates. Just silence.</div>
+              <div class="ba-pain-chips">
+                <span class="pain-chip">😰 40 min of uncertainty</span>
+                <span class="pain-chip">🔇 Zero updates from driver</span>
+                <span class="pain-chip">📱 Compulsive phone checking</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Parent anxiety</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill bad" style="--fill:85%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ba-divider-line">
+            <div class="ba-vs">VS</div>
+          </div>
+          <div class="ba-side ba-after">
+            <div class="ba-side-label after-label">✨ With Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">🛡️</div>
+              <div class="ba-scene-title">"Diya has boarded. 9:18 AM ✓"</div>
+              <div class="ba-scene-story">The moment Diya steps into the van, Kavya's phone buzzes: <em>"Diya has boarded the van — 9:18 AM, Sector 21."</em> She puts her phone down and focuses on work. When school ends, she watches the van move home on the map. One ping when it's close. That's it. Done.</div>
+              <div class="ba-pain-chips">
+                <span class="good-chip">✅ Instant boarding alert</span>
+                <span class="good-chip">🗺️ Live location always on</span>
+                <span class="good-chip">🧘 Full focus at work</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Parent anxiety</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill good" style="--fill:5%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: THE CHILD -->
+        <div class="ba-panel" data-index="4">
+          <div class="ba-side ba-before">
+            <div class="ba-side-label before-label">😰 Before Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">😓</div>
+              <div class="ba-scene-title">Arjun's school day doesn't end at 3 PM</div>
+              <div class="ba-scene-story">Arjun finishes school at 3:00 PM but gets home at 4:45 PM. That's almost 2 hours in transit every day — standing, cramped in an overfull bus with 42 kids. He's too tired for homework. Too tired to play. Too tired for anything but the couch.</div>
+              <div class="ba-pain-chips">
+                <span class="pain-chip">😴 Arrives home exhausted</span>
+                <span class="pain-chip">📚 No energy for homework</span>
+                <span class="pain-chip">🚐 Cramped, overcrowded van</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Child's energy after commute</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill bad" style="--fill:10%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ba-divider-line">
+            <div class="ba-vs">VS</div>
+          </div>
+          <div class="ba-side ba-after">
+            <div class="ba-side-label after-label">✨ With Anzen</div>
+            <div class="ba-card-scene">
+              <div class="ba-scene-icon">🌟</div>
+              <div class="ba-scene-title">Home by 3:30. Ready to live.</div>
+              <div class="ba-scene-story">Arjun leaves school at 3:00 PM and is home by 3:30. Private van, 5 kids, his regular route. He finishes homework by 5, plays cricket by 6. Dinner at 8. In bed by 9:30. The extra hour and a half every day? That's his childhood back.</div>
+              <div class="ba-pain-chips">
+                <span class="good-chip">⚡ Home 75 min earlier</span>
+                <span class="good-chip">📚 Homework done by 5 PM</span>
+                <span class="good-chip">🏏 Time to just be a kid</span>
+              </div>
+              <div class="ba-meter">
+                <div class="ba-meter-label">Child's energy after commute</div>
+                <div class="ba-meter-bar"><div class="ba-meter-fill good" style="--fill:90%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end ba-panels -->
+
+      <!-- NAV ARROWS -->
+      <div class="ba-arrows">
+        <button class="ba-arrow" id="baPrev" onclick="baNavigate(-1)">←</button>
+        <span class="ba-counter" id="baCounter">1 / 5</span>
+        <button class="ba-arrow" id="baNext" onclick="baNavigate(1)">→</button>
+      </div>
+
+    </div><!-- end sticky -->
+  </div><!-- end track outer -->
+</section>
+
+<!-- PROBLEM -->
+<section class="section">
+  <div class="section-label reveal">The Problem</div>
+  <h2 class="section-title reveal">School commute in India<br/>is broken.</h2>
+  <p class="section-sub reveal">Finding a safe van driver today means standing outside the school gate or asking other parents. There's no platform, no verification, no tracking — just hope.</p>
+
+  <div class="problem-grid">
+    <div class="problem-card reveal">
+      <span class="problem-icon">🚌</span>
+      <div class="problem-title">School buses take forever</div>
+      <p class="problem-desc">With 40+ kids on a single route, children spend 60–90 minutes in a bus after school. That's hours of their day wasted every week.</p>
+    </div>
+    <div class="problem-card reveal">
+      <span class="problem-icon">❓</span>
+      <div class="problem-title">No way to find drivers</div>
+      <p class="problem-desc">Parents resort to standing outside school gates or relying on word-of-mouth. There's no marketplace, no directory, no standard process.</p>
+    </div>
+    <div class="problem-card reveal">
+      <span class="problem-icon">⚠️</span>
+      <div class="problem-title">Unregulated & unsafe</div>
+      <p class="problem-desc">Most private vans are overcrowded, unverified, and never inspected. No background check on the driver. No fitness certificate on the vehicle.</p>
+    </div>
+    <div class="problem-card reveal">
+      <span class="problem-icon">👁️</span>
+      <div class="problem-title">Zero visibility for parents</div>
+      <p class="problem-desc">Once your child is in the van, you have no idea where they are, when they boarded, or when they'll arrive. No tracking. No alerts. No confirmation.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="section-label reveal">How Anzen Works</div>
+  <h2 class="section-title reveal">Safe commute in<br/>4 simple steps.</h2>
+
+  <div class="steps-wrap">
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <div class="step-title">Find your driver</div>
+      <p class="step-desc">Browse verified drivers serving your school zone. Filter by rating, experience, vehicle quality, and available seats.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">2</div>
+      <div class="step-title">Subscribe monthly</div>
+      <p class="step-desc">One simple monthly payment. Platform fee + driver fee — all bundled. No surprises, no cash, no daily bookings.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">3</div>
+      <div class="step-title">Track in real-time</div>
+      <p class="step-desc">Watch the van move on a live map. Get a push alert the moment it's 500m from your home.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">4</div>
+      <div class="step-title">Get boarding alerts</div>
+      <p class="step-desc">Know the exact moment your child boards and deboard the van — with timestamp, location, and a notification direct to your phone.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PHONE MOCKUP -->
+<div class="mockup-section reveal">
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="phone-status">
+        <span>9:24 AM</span>
+        <span class="live-badge"><span class="live-dot"></span> Live</span>
+      </div>
+      <div class="phone-header">Good morning, Priya 👋</div>
+      <div class="phone-sub">Arjun's van is on the way</div>
+
+      <div class="map-placeholder">
+        <div class="map-grid"></div>
+        <div class="map-dot"></div>
+      </div>
+
+      <div class="notification-card">
+        <span class="notif-icon">🟢</span>
+        <div class="notif-text">
+          <div class="notif-title">Van arriving in ~4 min</div>
+          <div class="notif-sub">Rajan's van • 500m away</div>
+        </div>
+      </div>
+      <div class="notification-card">
+        <span class="notif-icon">✅</span>
+        <div class="notif-text">
+          <div class="notif-title">Arjun has boarded!</div>
+          <div class="notif-sub">9:18 AM • Sector 12, Noida</div>
+        </div>
+      </div>
+      <div class="notification-card">
+        <span class="notif-icon">⭐</span>
+        <div class="notif-text">
+          <div class="notif-title">Driver: Rajan Kumar</div>
+          <div class="notif-sub">4.9 rating • 6 yrs experience</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-label reveal">What You Get</div>
+  <h2 class="section-title reveal">Every feature built<br/>around one thing.</h2>
+  <p class="section-sub reveal">Your child's safety. Everything on Anzen is designed to give you transparency, trust, and time back.</p>
+
+  <div class="features-grid">
+
+    <div class="feature-card large reveal">
+      <span class="feature-tag">🔍 Core Differentiator</span>
+      <span class="feature-icon">🛡️</span>
+      <div class="feature-title">Rigorous Driver Verification</div>
+      <p class="feature-desc">Every Anzen driver goes through a multi-step verification pipeline — Aadhaar, Driving License, Vehicle RC, Police Clearance Certificate, and vehicle fitness inspection. No driver goes live without passing every check. We re-verify every 6 months, automatically. If a driver fails, they're suspended and parents are notified immediately.</p>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-tag">📍 Real-Time</span>
+      <span class="feature-icon">🗺️</span>
+      <div class="feature-title">Live GPS Tracking</div>
+      <p class="feature-desc">Watch your child's van move on a live map, updated every 5 seconds. Know exactly where they are, always. Get a push alert when the van is 500m from your home — so you're always ready, never waiting.</p>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-tag">🔔 Instant Alerts</span>
+      <span class="feature-icon">✅</span>
+      <div class="feature-title">Boarding & Drop Confirmation</div>
+      <p class="feature-desc">The moment your child boards or exits the van, you get an instant notification with the exact time and GPS location. No guessing. No anxiety. Just certainty.</p>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-tag">⭐ Marketplace</span>
+      <span class="feature-icon">🚐</span>
+      <div class="feature-title">Choose Your Driver</div>
+      <p class="feature-desc">Browse real profiles. Compare drivers by rating, years of experience, vehicle type and quality, available seats, and price. Read reviews from other parents at your school. You choose who drives your child — not an algorithm.</p>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-tag">💳 Simple</span>
+      <span class="feature-icon">📅</span>
+      <div class="feature-title">Monthly Subscription</div>
+      <p class="feature-desc">One flat monthly fee. No daily bookings, no cash juggling. Platform fee and driver fee bundled into a single subscription. Pay once, commute all month. Cancel anytime.</p>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-tag">🆘 Safety</span>
+      <span class="feature-icon">🚨</span>
+      <div class="feature-title">SOS & Emergency Alerts</div>
+      <p class="feature-desc">One-tap SOS in the parent app triggers simultaneous alerts to your emergency contacts and our ops team — with the van's live location. Because safety isn't just about the normal days.</p>
+    </div>
+
+    <!-- COMING SOON -->
+    <div class="feature-card coming-soon reveal">
+      <span class="feature-tag" style="color:#A78BFA;background:rgba(139,92,246,0.1)">🤖 AI Hardware</span>
+      <span class="feature-icon">📸</span>
+      <div class="feature-title">Anzen Edge Device</div>
+      <p class="feature-desc">A smart AI-powered camera device installed inside every verified van. Confirms your child's identity the moment they board using facial recognition — and sends you a photo notification along with their detected emotion. Happy, calm, or something off — you'll always know. Continuous dashcam recording included.</p>
+    </div>
+
+    <div class="feature-card coming-soon reveal">
+      <span class="feature-tag" style="color:#A78BFA;background:rgba(139,92,246,0.1)">🧠 AI Insights</span>
+      <span class="feature-icon">😊</span>
+      <div class="feature-title">Child Emotion & Wellness Reports</div>
+      <p class="feature-desc">Using the Anzen Edge Device, we detect 7 universal emotions every time your child boards the van. Over time, you get a weekly wellness digest — so you notice patterns before they become problems.</p>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRUST -->
+<section class="section">
+  <div class="section-label reveal">Trust & Safety</div>
+  <h2 class="section-title reveal">We verify everything<br/>so you don't have to.</h2>
+
+  <div class="trust-row">
+    <div class="trust-main reveal">
+      <div class="trust-title">The Anzen Driver Standard</div>
+      <p class="trust-desc">No driver joins Anzen without completing our full verification pipeline. We check what matters most — and we check it again, every 6 months.</p>
+      <ul class="check-list">
+        <li>Aadhaar-based identity verification (OKYC)</li>
+        <li>Driving License validation via government database</li>
+        <li>Vehicle Registration Certificate (RC) check</li>
+        <li>Police Clearance Certificate — no criminal record</li>
+        <li>Vehicle Fitness Certificate — safety compliant</li>
+        <li>Capacity enforcement — no overcrowding, ever</li>
+        <li>Ongoing rating system — parents review after every month</li>
+        <li>Automatic suspension if re-verification fails</li>
+      </ul>
+    </div>
+    <div class="trust-mini-grid">
+      <div class="trust-mini reveal">
+        <div class="trust-mini-icon">📵</div>
+        <div class="trust-mini-title">Number Masking</div>
+        <p class="trust-mini-desc">Your phone number and the driver's are never shared directly. All calls go through Anzen's masked virtual numbers.</p>
+      </div>
+      <div class="trust-mini reveal">
+        <div class="trust-mini-icon">🔐</div>
+        <div class="trust-mini-title">Child Data Privacy</div>
+        <p class="trust-mini-desc">Fully compliant with India's DPDP Act 2023. Your child's data belongs to you — delete it anytime, and it's gone everywhere.</p>
+      </div>
+      <div class="trust-mini reveal">
+        <div class="trust-mini-icon">🔄</div>
+        <div class="trust-mini-title">6-Month Re-Verification</div>
+        <p class="trust-mini-desc">Driver credentials don't expire quietly. Every 6 months, full reverification runs automatically. Parents are notified if anything changes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- QUOTE -->
+<div class="quote-section reveal">
+  <div class="quote-mark">"</div>
+  <p class="quote-text">I moved from Mumbai to Delhi and spent two weeks asking parents outside school who's a good van driver. There has to be a better way.</p>
+  <p class="quote-author">— A parent in Dwarka, Delhi. The reason we built Anzen.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- CITIES -->
+<section class="section" style="text-align:center">
+  <div class="section-label reveal" style="text-align:center">Where We're Launching</div>
+  <h2 class="section-title reveal" style="text-align:center">Starting in India's<br/>biggest cities.</h2>
+  <p class="section-sub reveal" style="margin:0 auto;text-align:center">We're launching in Tier 1 cities first — where the problem is most acute and parents demand the highest safety standards.</p>
+  <div class="cities-row reveal">
+    <div class="city-pill"><span class="city-dot"></span> Mumbai</div>
+    <div class="city-pill"><span class="city-dot"></span> Delhi NCR</div>
+    <div class="city-pill"><span class="city-dot"></span> Bangalore</div>
+    <div class="city-pill" style="opacity:0.5;border-style:dashed">+ More cities soon</div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-final" id="waitlist-section">
+  <div class="cta-box reveal">
+    <h2 class="cta-title">Be the first to<br/>know when<br/><span style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">we launch.</span></h2>
+    <p class="cta-sub">Join hundreds of parents already on the Anzen waitlist. Early access members get priority onboarding and founding member pricing.</p>
+    <div class="cta-form-wrap">
+      <div class="waitlist-form" id="cta-form">
+        <input type="email" id="cta-email" placeholder="Your email address" />
+        <button class="btn-waitlist" onclick="joinWaitlist('cta')">Get Early Access →</button>
+      </div>
+      <div class="waitlist-success" id="cta-success">
+        <span>🎉</span> You're on the list! We'll reach out before launch.
+      </div>
+      <p class="waitlist-note" style="margin-top:12px">🔒 Zero spam. Unsubscribe anytime. Your data stays yours.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <span class="logo-dot"></span>
+    Anzen
+  </div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="/cdn-cgi/l/email-protection#59313c353536193837233c37773037">Contact</a>
+  </div>
+  <div class="footer-copy">© 2025 Anzen. Safe commutes for every child.</div>
+</footer>
+
+<script>
+(function(){
+  /* ── DOM ── */
+  var dot   = document.getElementById('c-dot');
+  var ring  = document.getElementById('c-ring');
+  var glow  = document.getElementById('c-glow');
+  var tCvs  = document.getElementById('c-trail');
+  var sCvs  = document.getElementById('c-sparks');
+  if(!dot) return;
+  var tCtx = tCvs.getContext('2d');
+  var sCtx = sCvs.getContext('2d');
+
+  /* ── STATE ── */
+  var mx=-200,my=-200,rx=-200,ry=-200,gx=-200,gy=-200,lx=-200,ly=-200,spd=0;
+  var trail=[], parts=[];
+  var TMAX=32;
+
+  function resize(){
+    tCvs.width=sCvs.width=window.innerWidth;
+    tCvs.height=sCvs.height=window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  /* ── PARTICLE CLASS ── */
+  function Spark(x,y,burst){
+    this.x=x; this.y=y;
+    var s=burst?4.5:2;
+    var a=Math.random()*Math.PI*2;
+    this.vx=Math.cos(a)*s*(0.5+Math.random());
+    this.vy=Math.sin(a)*s*(0.5+Math.random())-(burst?2:0.6);
+    this.life=1;
+    this.decay=(burst?0.035:0.02)+Math.random()*0.025;
+    this.r=(burst?3:2)+Math.random()*2;
+    var c=['78,255,160','61,214,255','255,255,255','255,210,80'];
+    this.col=c[Math.floor(Math.random()*c.length)];
+  }
+  Spark.prototype.step=function(){
+    this.x+=this.vx; this.y+=this.vy;
+    this.vy+=0.06; this.vx*=0.97; this.life-=this.decay;
+  };
+  Spark.prototype.draw=function(ctx){
+    ctx.beginPath();
+    var rad=this.r*this.life; if(rad<=0)return; ctx.arc(this.x,this.y,rad,0,Math.PI*2);
+    ctx.fillStyle='rgba('+this.col+','+this.life.toFixed(2)+')';
+    ctx.fill();
+  };
+
+  /* ── MAIN LOOP ── */
+  function loop(){
+    rx+=(mx-rx)*0.13; ry+=(my-ry)*0.13;
+    gx+=(mx-gx)*0.055; gy+=(my-gy)*0.055;
+    spd=Math.hypot(mx-lx,my-ly); lx=mx; ly=my;
+
+    dot.style.left=mx+'px';  dot.style.top=my+'px';
+    ring.style.left=rx+'px'; ring.style.top=ry+'px';
+    glow.style.left=gx+'px'; glow.style.top=gy+'px';
+
+    /* trail */
+    trail.push({x:mx,y:my});
+    if(trail.length>TMAX) trail.shift();
+    tCtx.clearRect(0,0,tCvs.width,tCvs.height);
+    for(var i=1;i<trail.length;i++){
+      var t=i/trail.length;
+      tCtx.beginPath();
+      tCtx.moveTo(trail[i-1].x,trail[i-1].y);
+      tCtx.lineTo(trail[i].x,trail[i].y);
+      tCtx.strokeStyle='rgba(78,255,160,'+(t*0.3).toFixed(2)+')';
+      tCtx.lineWidth=t*4;
+      tCtx.lineCap='round';
+      tCtx.stroke();
+    }
+
+    /* spawn sparks on fast move */
+    if(spd>7 && Math.random()>0.42)
+      parts.push(new Spark(mx+(Math.random()-.5)*8,my+(Math.random()-.5)*8,false));
+
+    /* draw sparks */
+    sCtx.clearRect(0,0,sCvs.width,sCvs.height);
+    for(var i=parts.length-1;i>=0;i--){
+      parts[i].step(); parts[i].draw(sCtx);
+      if(parts[i].life<=0) parts.splice(i,1);
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  /* ── MOUSE EVENTS ── */
+  document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;});
+  document.addEventListener('mouseleave',function(){dot.style.opacity='0';ring.style.opacity='0';glow.style.opacity='0';});
+  document.addEventListener('mouseenter',function(){dot.style.opacity='1';ring.style.opacity='1';glow.style.opacity='1';});
+
+  /* hover classes */
+  var hsel='a,button,input,.problem-card,.feature-card,.trust-mini,.city-pill,.ba-step-btn,.step,.ba-side';
+  [].forEach.call(document.querySelectorAll(hsel),function(el){
+    el.addEventListener('mouseenter',function(){document.body.classList.add('chover');});
+    el.addEventListener('mouseleave',function(){document.body.classList.remove('chover');});
+  });
+
+  /* click burst */
+  document.addEventListener('mousedown',function(){
+    document.body.classList.add('cclick');
+    for(var i=0;i<20;i++) parts.push(new Spark(mx,my,true));
+  });
+  document.addEventListener('mouseup',function(){document.body.classList.remove('cclick');});
+
+  /* ── RIPPLE ── */
+  document.addEventListener('click',function(e){
+    var target=e.target.closest('button,a,.problem-card,.feature-card,.trust-mini,.city-pill');
+    if(!target) return;
+    var r=target.getBoundingClientRect();
+    var sz=Math.max(r.width,r.height)*1.6;
+    var el=document.createElement('span');
+    el.className='ripple-wave';
+    el.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(e.clientX-r.left-sz/2)+'px;top:'+(e.clientY-r.top-sz/2)+'px';
+    if(getComputedStyle(target).position==='static') target.style.position='relative';
+    target.style.overflow='hidden';
+    target.appendChild(el);
+    el.addEventListener('animationend',function(){el.remove();});
+  });
+
+  /* ── MAGNETIC BUTTONS ── */
+  [].forEach.call(document.querySelectorAll('.btn-nav,.btn-waitlist,.ba-arrow'),function(btn){
+    btn.addEventListener('mousemove',function(e){
+      var r=this.getBoundingClientRect();
+      var dx=(e.clientX-(r.left+r.width/2))*0.3;
+      var dy=(e.clientY-(r.top+r.height/2))*0.3;
+      this.style.transform='translate('+dx+'px,'+dy+'px)';
+      this.style.transition='transform 0.08s ease';
+    });
+    btn.addEventListener('mouseleave',function(){
+      this.style.transform='';
+      this.style.transition='transform 0.5s cubic-bezier(.25,.46,.45,.94)';
+    });
+  });
+
+  /* ── 3D TILT ── */
+  [].forEach.call(document.querySelectorAll('.feature-card,.problem-card,.ba-side,.trust-mini'),function(card){
+    card.addEventListener('mousemove',function(e){
+      var r=this.getBoundingClientRect();
+      var dx=(e.clientX-r.left)/r.width-0.5;
+      var dy=(e.clientY-r.top)/r.height-0.5;
+      this.style.transform='perspective(700px) rotateX('+(dy*-9)+'deg) rotateY('+(dx*9)+'deg) translateY(-5px) scale(1.015)';
+      this.style.transition='transform 0.05s linear';
+      this.style.backgroundImage='radial-gradient(circle at '+((e.clientX-r.left)/r.width*100)+'% '+((e.clientY-r.top)/r.height*100)+'%,rgba(78,255,160,.09),transparent 60%)';
+    });
+    card.addEventListener('mouseleave',function(){
+      this.style.transform='';
+      this.style.backgroundImage='';
+      this.style.transition='transform 0.5s cubic-bezier(.25,.46,.45,.94)';
+    });
+  });
+
+  /* ── TEXT SCRAMBLE ── */
+  var accent=document.querySelector('.hero-title .line-accent');
+  if(accent){
+    var orig=accent.textContent;
+    var glyphs='アンゼン安全#$@!?&*';
+    var stimer=null, iter=0;
+    document.querySelector('.hero-title').addEventListener('mouseenter',function(){
+      clearInterval(stimer); iter=0;
+      stimer=setInterval(function(){
+        accent.textContent=orig.split('').map(function(c,i){
+          if(c===' ') return ' ';
+          if(i<iter) return orig[i];
+          return glyphs[Math.floor(Math.random()*glyphs.length)];
+        }).join('');
+        iter+=0.7;
+        if(iter>=orig.length){accent.textContent=orig;clearInterval(stimer);}
+      },42);
+    });
+  }
+
+  /* ── PARALLAX ORBS ── */
+  var orbs=document.querySelectorAll('.orb');
+  window.addEventListener('scroll',function(){
+    var sy=window.scrollY;
+    [].forEach.call(orbs,function(o,i){
+      o.style.transform='translateY('+(sy*[0.07,0.04,0.09][i])+'px)';
+    });
+  },{passive:true});
+
+})();
+</script>
+
+<script>
+  /* ── NAV + SCROLL REVEALS + WAITLIST + BA NAVIGATOR ── */
+  var navbar=document.getElementById('navbar');
+  window.addEventListener('scroll',function(){
+    navbar.classList.toggle('scrolled',window.scrollY>40);
+  });
+
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry,i){
+      if(entry.isIntersecting){
+        setTimeout(function(){entry.target.classList.add('visible');},i*80);
+      }
+    });
+  },{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){observer.observe(el);});
+
+  var waitlist=new Set();
+  function joinWaitlist(src){
+    var emailEl=document.getElementById(src+'-email');
+    var formEl=document.getElementById(src+'-form');
+    var successEl=document.getElementById(src+'-success');
+    var btn=formEl&&formEl.querySelector('.btn-waitlist');
+    var email=emailEl&&emailEl.value.trim();
+    if(!email||!email.includes('@')){
+      emailEl.style.outline='1px solid var(--accent3)';
+      emailEl.placeholder='Please enter a valid email';
+      setTimeout(function(){emailEl.style.outline='';emailEl.placeholder=src==='hero'?'Enter your email address':'Your email address';},2000);
+      return;
+    }
+    if(btn){btn.textContent='Joining...';btn.style.opacity='.7';}
+    setTimeout(function(){
+      waitlist.add(email);
+      formEl.style.display='none';
+      successEl.style.display='flex';
+    },900);
+  }
+
+  document.querySelectorAll('.waitlist-form input').forEach(function(inp){
+    inp.addEventListener('keydown',function(e){
+      if(e.key==='Enter') joinWaitlist(inp.id.replace('-email',''));
+    });
+  });
+
+  /* BA navigator */
+  var baCurrent=0, baTotal=5;
+  function baGoTo(idx){
+    document.querySelectorAll('.ba-panel')[baCurrent].classList.remove('active');
+    document.querySelectorAll('.ba-step-btn')[baCurrent].classList.remove('active');
+    baCurrent=idx;
+    document.querySelectorAll('.ba-panel')[baCurrent].classList.add('active');
+    document.querySelectorAll('.ba-step-btn')[baCurrent].classList.add('active');
+    var pct=((baCurrent+1)/baTotal)*100;
+    document.getElementById('baProgress').style.width=pct+'%';
+    document.getElementById('baCounter').textContent=(baCurrent+1)+' / '+baTotal;
+    document.getElementById('baPrev').disabled=baCurrent===0;
+    document.getElementById('baNext').disabled=baCurrent===baTotal-1;
+    document.querySelectorAll('.ba-panel')[baCurrent].querySelectorAll('.ba-meter-fill').forEach(function(el){
+      var t=el.style.getPropertyValue('--fill');
+      el.style.setProperty('--fill','0%');
+      requestAnimationFrame(function(){requestAnimationFrame(function(){el.style.setProperty('--fill',t);});});
+    });
+  }
+  function baNavigate(d){var n=baCurrent+d;if(n>=0&&n<baTotal)baGoTo(n);}
+  document.querySelectorAll('.ba-step-btn').forEach(function(btn,i){btn.addEventListener('click',function(){baGoTo(i);});});
+  document.getElementById('baPrev').disabled=true;
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight')baNavigate(1);
+    if(e.key==='ArrowLeft')baNavigate(-1);
+  });
+
+  /* stat counter */
+  function animCount(el,target,suf){
+    var c=0,step=Math.ceil(target/40);
+    var t=setInterval(function(){c=Math.min(c+step,target);el.textContent=c+suf;if(c>=target)clearInterval(t);},40);
+  }
+  var sObs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var nums=entry.target.querySelectorAll('.stat-num');
+        if(nums[0])animCount(nums[0],40,'+');
+        if(nums[1])nums[1].textContent='90 min';
+        if(nums[2])animCount(nums[2],0,'%');
+        sObs.unobserve(entry.target);
+      }
+    });
+  },{threshold:0.5});
+  var hs=document.querySelector('.hero-stats');
+  if(hs)sObs.observe(hs);
+</script>
+
+</body>
+</html>
